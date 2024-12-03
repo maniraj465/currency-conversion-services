@@ -1,0 +1,82 @@
+package com.maniraj.currency_conversion_service.controller;
+
+import com.maniraj.currency_conversion_service.bean.CurrencyConversion;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import java.math.BigDecimal;
+import java.net.ConnectException;
+import java.util.HashMap;
+
+@RestController
+@RequestMapping("cb")
+public class CurrencyConversionCircuitBreakerController {
+
+    private CurrencyExchangeProxy currencyExchangeProxy;
+    private Logger logger = LoggerFactory.getLogger(CurrencyConversionCircuitBreakerController.class);
+
+    CurrencyConversionCircuitBreakerController(CurrencyExchangeProxy currencyExchangeProxy) {
+        this.currencyExchangeProxy = currencyExchangeProxy;
+    }
+
+
+//    @CircuitBreaker(name = "currency-conversion")
+//    @Retry(name="default", fallbackMethod = "failureResponse")
+    @Retry(name="currency-conversion-api", fallbackMethod = "failureResponse")
+//    @CircuitBreaker(name="currency-conversion-api", fallbackMethod = "failureResponse")
+//    @CircuitBreaker(name="default", fallbackMethod = "failureResponse")
+    @GetMapping("currency-conversion/from/{fromCurrency}/to/{toCurrency}/quantity/{quantity}")
+    public CurrencyConversion calculateCurrencyConversion(@PathVariable String fromCurrency,
+                                                          @PathVariable String toCurrency,
+                                                          @PathVariable BigDecimal quantity) {
+
+        logger.info("CurrencyConversionCircuitBreakerController:::calculateCurrencyConversion");
+
+        HashMap<String, String> uriVariables = new HashMap<>();
+        uriVariables.put("fromCurrency", fromCurrency);
+        uriVariables.put("toCurrency", toCurrency);
+
+        ResponseEntity<CurrencyConversion> responseEntity = new RestTemplate()
+                .getForEntity("http://localhost:8000/currency-exchange/from/{fromCurrency}/to/{toCurrency}",
+                        CurrencyConversion.class, uriVariables);
+        CurrencyConversion currencyConversion = responseEntity.getBody();
+
+        return new CurrencyConversion(currencyConversion.getId(),
+                fromCurrency, toCurrency, quantity, currencyConversion.getConversionMultiple(),
+                currencyConversion.getConversionMultiple().multiply(quantity), currencyConversion.getEnvironment());
+    }
+
+//    @GetMapping("currency-conversion-feign/from/{fromCurrency}/to/{toCurrency}/quantity/{quantity}")
+//    public CurrencyConversion calculateCurrencyConversionFeign(@PathVariable String fromCurrency,
+//                                                               @PathVariable String toCurrency,
+//                                                               @PathVariable BigDecimal quantity) {
+//
+//        CurrencyConversion currencyConversion = currencyExchangeProxy.retriveExchangeValue(fromCurrency, toCurrency);
+//        currencyConversion.setQuantity(quantity);
+//        currencyConversion.setTotalCalculatedAmount(currencyConversion.getConversionMultiple().multiply(quantity));
+//
+//        return currencyConversion;
+//    }
+
+    public CurrencyConversion failureResponse(String fromCurrency,
+                                              String toCurrency,
+                                              BigDecimal quantity,
+                                              Exception ex) {
+        logger.error("CurrencyConversionCircuitBreakerController:::calculateCurrencyConversion:::", ex.toString());
+
+        CurrencyConversion currencyConversion = new CurrencyConversion();
+
+        return new CurrencyConversion(0L,
+                fromCurrency, toCurrency, new BigDecimal(0), new BigDecimal(0),
+                new BigDecimal(0), "Environment is down");
+
+    }
+}

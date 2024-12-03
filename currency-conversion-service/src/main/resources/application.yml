@@ -1,0 +1,51 @@
+server:
+  port: 8100
+
+
+resilience4j.retry:
+  instances:
+    currency-conversion-api:
+#      maxRetryAttempts: 5 # @Deprecated
+      maxAttempts: 5
+      waitDuration: 5s
+      enableExponentialBackoff: true
+
+#    default:
+#      maxRetryAttempts: 6  # @Deprecated
+#      maxAttempts: 5
+#      waitDuration: 1s
+#      enableExponentialBackOff: true
+
+resilience4j.circuitbreaker:
+  instances:
+    default:
+      failureRateThreshold: 90
+
+resilience4j.ratelimit:
+  instances:
+    default: # can be replaced with name - currency-conversion-api
+        limitForPeriod: 2
+        limitRefreshPeriod: 10s
+
+resilience4j.bulkhead:
+  instances:
+    default:
+      maxConcurrentCalls: 10
+
+
+spring:
+  application:
+    name: currency-conversion
+
+  config:
+    import: optional:configserver:http://localhost:8888
+
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka
+
+
+
+
+
