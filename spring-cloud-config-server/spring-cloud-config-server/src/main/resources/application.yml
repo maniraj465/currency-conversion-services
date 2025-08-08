@@ -6,9 +6,16 @@ spring:
     config:
       server:
         git:
-          uri: file:///C:/GitHub/git-localconfig-repo
+#          uri: file:///C:/GitHub/git-localconfig-repo
+          uri: file:///C:/Users/Maniraj/Desktop/currency-conversion-services/git-localconfig-repo-currency-conversion-services
+
 
 server:
   port: 8888
+
+eureka:
+  client:
+    service-url:
+      default-zone: http://localhost:8761/eureka
 
 

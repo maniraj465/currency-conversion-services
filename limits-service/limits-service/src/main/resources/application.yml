@@ -3,11 +3,12 @@ spring:
     name: limits-service
 
 
-  profiles:
-    active: dev   # Profile changes without this property
+#  profiles:
+#    active: dev    # Profile changes without this property
+
   cloud:
     config:
-      profile: dev
+      profile: dev    # Profile changes without this property
 
   config:
     import: optional:configserver:http://localhost:8888
@@ -15,6 +16,6 @@ spring:
 server:
   port: 8080
 
-limits-service:
-  minimum: 2
-  maximum: 888
+#limits-service:
+#  minimum: 2
+#  maximum: 888

@@ -8,12 +8,17 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
+  cloud:
+    config:
+      profile: dev    # Profile changes without this property
+
   sql:
     init:
       mode: always
 
   datasource:
-    url: jdbc:mysql://localhost:3306/currency_exchange_service?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+#    url: jdbc:mysql://localhost:3306/currency_exchange_service?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    url: jdbc:mysql://localhost:3336/currency_exchange_service
     username: maniraj
     password: Alliswell@1
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -23,7 +28,9 @@ spring:
     hibernate:
       ddl-auto: create-drop
     properties:
+      allowPublicKeyRetrieval: true
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
 resilience4j:

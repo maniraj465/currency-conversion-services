@@ -40,6 +40,10 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
 
+  cloud:
+    config:
+      profile: dev    # Profile changes without this property
+
 eureka:
   client:
     service-url:
