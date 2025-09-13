@@ -1,5 +1,6 @@
 package com.maniraj.currency_exchange_service.bean;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -18,7 +19,11 @@ import java.math.BigDecimal;
 public class CurrencyExchange {
     @Id
     private Long id;
+
+    @Column(name = "currency_from")
     private String fromCurrency;
+
+    @Column(name = "currency_from")
     private String toCurrency;
     private BigDecimal conversionMultiple;
     private String environment;
