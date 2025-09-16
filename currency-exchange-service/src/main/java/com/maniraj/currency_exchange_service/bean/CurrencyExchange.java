@@ -23,7 +23,7 @@ public class CurrencyExchange {
     @Column(name = "currency_from")
     private String fromCurrency;
 
-    @Column(name = "currency_from")
+    @Column(name = "currency_to")
     private String toCurrency;
     private BigDecimal conversionMultiple;
     private String environment;

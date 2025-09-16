@@ -33,11 +33,20 @@ public class CurrencyExchangeController {
     @GetMapping("currency-exchange/from/{fromCurrency}/to/{toCurrency}")
     public CurrencyExchange retriveExchangeValue(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
         String port = environment.getProperty("local.server.port");
-//        return currencyExchangeService.getAllCurrencyExchanges().stream().filter(ex -> {
-//            return ex.getFromCurrency().equals(fromCurrency) && ex.getToCurrency().equals(toCurrency);
-//        }).collect(Collectors.toList());
         CurrencyExchange currencyExchange = currencyExchangeService.getByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
         currencyExchange.setEnvironment("PORT : " + port);
+        System.out.println("local.server.port");
+        return currencyExchange;
+    }
+
+    @GetMapping("currency-exchange-feign/from/{fromCurrency}/to/{toCurrency}")
+    public CurrencyExchange retriveExchangeValueFeign(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
+        String port = environment.getProperty("local.server.port");
+        CurrencyExchange currencyExchange = currencyExchangeService.getByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
+        currencyExchange.setEnvironment("PORT : " + port);
+
+        System.out.println("local.server.port");
+
         return currencyExchange;
     }
 }

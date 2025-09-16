@@ -21,11 +21,13 @@ public class CurrencyConversionController {
         this.currencyExchangeProxy = currencyExchangeProxy;
     }
 
+
     @GetMapping("currency-conversion/from/{fromCurrency}/to/{toCurrency}/quantity/{quantity}")
     public CurrencyConversion calculateCurrencyConversion(@PathVariable String fromCurrency,
                                                           @PathVariable String toCurrency,
                                                           @PathVariable BigDecimal quantity) {
 
+        System.out.println("currency-conversion/from/{fromCurrency}/to/{toCurrency}/quantity/{quantity}");
         HashMap<String, String> uriVariables = new HashMap<>();
         uriVariables.put("fromCurrency", fromCurrency);
         uriVariables.put("toCurrency", toCurrency);
@@ -44,11 +46,24 @@ public class CurrencyConversionController {
     public CurrencyConversion calculateCurrencyConversionFeign(@PathVariable String fromCurrency,
                                                           @PathVariable String toCurrency,
                                                           @PathVariable BigDecimal quantity) {
-
+        System.out.println("calculateCurrencyConversionFeign");
         CurrencyConversion currencyConversion = currencyExchangeProxy.retriveExchangeValue(fromCurrency, toCurrency);
         currencyConversion.setQuantity(quantity);
         currencyConversion.setTotalCalculatedAmount(currencyConversion.getConversionMultiple().multiply(quantity));
 
         return currencyConversion;
     }
+
+    @GetMapping("currency-conversion-new/from/{fromCurrency}/to/{toCurrency}/quantity/{quantity}")
+    public CurrencyConversion calculateCurrencyConversionNew(@PathVariable String fromCurrency,
+                                                               @PathVariable String toCurrency,
+                                                               @PathVariable BigDecimal quantity) {
+        System.out.println("calculateCurrencyConversionNew");
+        CurrencyConversion currencyConversion = currencyExchangeProxy.retriveExchangeValue(fromCurrency, toCurrency);
+        currencyConversion.setQuantity(quantity);
+        currencyConversion.setTotalCalculatedAmount(currencyConversion.getConversionMultiple().multiply(quantity));
+
+        return currencyConversion;
+    }
+    
 }

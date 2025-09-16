@@ -1,0 +1,22 @@
+# Optimized approach - Reuse layers which won't change very often
+# Part 1: Build
+FROM maven:3.8.7-openjdk-18-slim AS build
+WORKDIR /home/app
+
+# Part 2: Copy files which won't change very often
+COPY ./pom.xml /home/app/pom.xml
+COPY ./src/main/java/com/maniraj/api_gateway/ApiGatewayApplication.java /home/app//src/main/java/com/maniraj/api_gateway/ApiGatewayApplication.java
+
+# Part 3: Maven clean and build
+RUN mvn -f /home/app/pom.xml clean package
+
+# Part 4: Copy files which may change often and then maven clean and build
+COPY . /home/app
+RUN mvn -f /home/app/pom.xml clean package
+
+
+# Part 5: Runtime
+FROM openjdk:18-jdk-slim
+COPY --from=build /home/app/target/*.jar /app.jar
+EXPOSE 8765
+ENTRYPOINT ["java", "-jar", "/app.jar"]

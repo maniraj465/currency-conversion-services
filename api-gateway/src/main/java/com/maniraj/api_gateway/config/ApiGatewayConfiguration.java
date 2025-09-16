@@ -19,7 +19,7 @@ public class ApiGatewayConfiguration {
                 p -> p.path("/get")
                         .filters(f -> f
                                 .addRequestHeader("X-h-name", "X-h-value")
-                                .addRequestParameter("R-param", "R-value"))
+                                .addRequestParameter("R-params", "R-values"))
                         .uri("http://httpbin.org:80");
 
         Function<PredicateSpec, Buildable<Route>> currencyExchangeRouteFunction =

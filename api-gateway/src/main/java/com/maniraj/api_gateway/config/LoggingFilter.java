@@ -16,9 +16,7 @@ public class LoggingFilter implements GlobalFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         logger.info("Path of the request is : {}", exchange.getRequest().getPath());
-//        logger.debug("Path of the request is : {}", exchange.getRequest().getPath());
         logger.warn("Path of the request is : {}", exchange.getRequest().getPath());
-//        logger.trace("Path of the request is : {}", exchange.getRequest().getPath());
         logger.error("Path of the request is : {}", exchange.getRequest().getPath());
         return chain.filter(exchange);
     }

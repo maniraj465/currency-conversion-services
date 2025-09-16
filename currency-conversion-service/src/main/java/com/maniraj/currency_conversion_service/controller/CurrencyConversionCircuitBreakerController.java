@@ -49,6 +49,7 @@ public class CurrencyConversionCircuitBreakerController {
                         CurrencyConversion.class, uriVariables);
         CurrencyConversion currencyConversion = responseEntity.getBody();
 
+
         return new CurrencyConversion(currencyConversion.getId(),
                 fromCurrency, toCurrency, quantity, currencyConversion.getConversionMultiple(),
                 currencyConversion.getConversionMultiple().multiply(quantity), currencyConversion.getEnvironment());

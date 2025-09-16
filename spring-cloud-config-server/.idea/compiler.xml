@@ -11,7 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="spring-cloud-config-server" target="17" />
+      <module name="spring-cloud-config-server" target="19" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
