@@ -11,11 +11,17 @@ spring:
         locator:
           enabled: true
           lower-case-service-id: true
-  config:
-    import: optional:configserver:http://localhost:8888
 
 eureka:
   client:
     service-url:
       default-zone: http://localhost:8761/eureka
 
+  instance:
+    prefer-ip-address: true
+    ip-address: localhost  # or use actual IP
+    hostname: localhost
+    instance-id: ${spring.application.name}:${server.port}
+
+  config:
+    import: optional:configserver:http://localhost:8888

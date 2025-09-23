@@ -21,7 +21,6 @@ public class CurrencyConversionController {
         this.currencyExchangeProxy = currencyExchangeProxy;
     }
 
-
     @GetMapping("currency-conversion/from/{fromCurrency}/to/{toCurrency}/quantity/{quantity}")
     public CurrencyConversion calculateCurrencyConversion(@PathVariable String fromCurrency,
                                                           @PathVariable String toCurrency,
