@@ -17,8 +17,9 @@ import java.util.stream.Collectors;
 @RestController
 public class CurrencyExchangeController {
 
-    private Logger logger = LoggerFactory.getLogger(CurrencyExchangeController.class);
-    CurrencyExchangeService currencyExchangeService;
+    private final Logger logger = LoggerFactory.getLogger(CurrencyExchangeController.class);
+
+    private final CurrencyExchangeService currencyExchangeService;
 
     CurrencyExchangeController(CurrencyExchangeService currencyExchangeService) {
         this.currencyExchangeService = currencyExchangeService;
@@ -28,44 +29,42 @@ public class CurrencyExchangeController {
     private Environment environment;
 
     @GetMapping("currency-exchange")
-    public List<CurrencyExchange> retriveAllExchangeValue() {
-        logger.info("CurrencyExchangeController:::retriveAllExchangeValue:::Begin");
+    public List<CurrencyExchange> retrieveAllExchangeValues() {
+        logger.info("CurrencyExchangeController:::retrieveAllExchangeValues:::Begin");
 
         String port = environment.getProperty("server.port");
         List<CurrencyExchange> currencyExchanges = currencyExchangeService.getAllCurrencyExchanges();
 
         System.out.println("server.port - " + port);
 
-        logger.info("CurrencyExchangeController:::retriveAllExchangeValue:::End");
+        logger.info("CurrencyExchangeController:::retrieveAllExchangeValues:::End");
         return currencyExchanges;
     }
 
     @GetMapping("currency-exchange/from/{fromCurrency}/to/{toCurrency}")
-    public CurrencyExchange retriveExchangeValue(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
-        logger.info("CurrencyExchangeController:::retriveExchangeValue:::Begin");
+    public CurrencyExchange retrieveAllExchangeValue(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
+        logger.info("CurrencyExchangeController:::retrieveAllExchangeValue:::Begin");
 
         String port = environment.getProperty("server.port");
         CurrencyExchange currencyExchange = currencyExchangeService.getByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
-        currencyExchange.setEnvironment("PORT : " + port);
 
         System.out.println("server.port - " + port);
 
-        logger.info("CurrencyExchangeController:::retriveExchangeValue:::End");
+        logger.info("CurrencyExchangeController:::retrieveAllExchangeValue:::End");
         return currencyExchange;
     }
 
     @GetMapping("currency-exchange-feign/from/{fromCurrency}/to/{toCurrency}")
-    public CurrencyExchange retriveExchangeValueFeign(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
-        logger.info("CurrencyExchangeController:::retriveExchangeValueFeign:::Begin");
+    public CurrencyExchange retrieveExchangeValueFeign(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
+        logger.info("CurrencyExchangeController:::retrieveExchangeValueFeign:::Begin");
 
         String port = environment.getProperty("server.port");
 
         CurrencyExchange currencyExchange = currencyExchangeService.getByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
-        currencyExchange.setEnvironment("PORT : " + port);
 
         logger.info("server.port:::" + port);
 
-        logger.info("CurrencyExchangeController:::retriveExchangeValueFeign:::End");
+        logger.info("CurrencyExchangeController:::retrieveExchangeValueFeign:::End");
         return currencyExchange;
     }
 }

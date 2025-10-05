@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: currency-exchange
+    name: currency-exchange-service
 
   config:
     import: optional:configserver:http://localhost:8888
@@ -19,9 +19,12 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/currency_exchange_service?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
 #    url: jdbc:mysql://localhost:3336/currency_exchange_service
+#   For docker image -
+#    url: jdbc:mysql://currency-service-mysql-db:3306/currency_exchange_service??useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
     username: maniraj
     password: Alliswell@1
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     show_sql: true
     defer-data-source-initialization: true
@@ -39,7 +42,6 @@ resilience4j:
       currency-exchange-get-all:
         maxRetryAttempts : 5
 
-
 # Tracing, Logs, and Metrics - For Spring Boot 3
 management:
   tracing:
@@ -47,14 +49,14 @@ management:
         probability: 1.0      # 1.0 means, we want to trace every requests
 
 logging:
-  patter:
+  pattern:
     level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"      # Format
-
 
 eureka:
   client:
     service-url:
-      default-zone: http://localhost:8761/eureka
+      default-zone: naming-server:8765/eureka
+#      default-zone: http://localhost:8765/eureka
 
   instance:
     prefer-ip-address: true

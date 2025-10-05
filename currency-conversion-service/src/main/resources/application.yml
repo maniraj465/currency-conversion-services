@@ -35,7 +35,7 @@ resilience4j.bulkhead:
 
 spring:
   application:
-    name: currency-conversion
+    name: currency-conversion-service
 
   config:
     import: optional:configserver:http://localhost:8888
@@ -47,7 +47,7 @@ spring:
 eureka:
   client:
     service-url:
-      default-zone: http://localhost:8761/eureka
+      default-zone: naming-server:8761/eureka
 
   instance:
     prefer-ip-address: true

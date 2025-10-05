@@ -10,11 +10,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CurrencyConversion {
-    private Long id;
-    private String fromCurrency;
-    private String toCurrency;
-    private BigDecimal quantity;
-    private BigDecimal conversionMultiple;
-    private BigDecimal totalCalculatedAmount;
-    private String environment;
+    public Long id;
+    public String fromCurrency;
+    public String toCurrency;
+    public BigDecimal quantity;
+    public BigDecimal conversionMultiple;
+    public BigDecimal totalCalculatedAmount;
 }

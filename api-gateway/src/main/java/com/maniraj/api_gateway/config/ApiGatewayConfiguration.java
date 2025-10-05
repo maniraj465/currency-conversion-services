@@ -1,5 +1,7 @@
 package com.maniraj.api_gateway.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.Buildable;
@@ -13,8 +15,13 @@ import java.util.function.Function;
 @Configuration
 public class ApiGatewayConfiguration {
 
+    private Logger logger = LoggerFactory.getLogger(ApiGatewayConfiguration.class);
+
     @Bean
     public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
+
+        logger.info("ApiGatewayConfiguration:::gatewayRouter:::Begin");
+
         Function<PredicateSpec, Buildable<Route>> getRouteFunction =
                 p -> p.path("/get")
                         .filters(f -> f
@@ -41,6 +48,8 @@ public class ApiGatewayConfiguration {
                                         "/currency-conversion-new/(?<segment>.*)",
                                         "/currency-conversion-feign/${segment}"))
                         .uri("lb://currency-conversion");
+
+        logger.info("ApiGatewayConfiguration:::gatewayRouter:::End");
 
         return builder.routes()
                 .route(getRouteFunction)

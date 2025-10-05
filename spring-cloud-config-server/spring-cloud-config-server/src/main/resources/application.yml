@@ -6,10 +6,8 @@ spring:
     config:
       server:
         git:
-          uri: file:///D:/GitHub/currency-conversion-services/git-localconfig-repo
+          uri: file:///D:/GitHub/git-localconfig-repo-currency-conversion-services
 #          uri: file:///C:/Users/Maniraj/Desktop/currency-conversion-services/git-localconfig-repo-currency-conversion-services
-
-
 server:
   port: 8888
 

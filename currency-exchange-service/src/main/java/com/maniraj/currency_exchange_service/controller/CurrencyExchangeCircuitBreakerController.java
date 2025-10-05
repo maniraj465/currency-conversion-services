@@ -18,12 +18,11 @@ import java.util.List;
 @RequestMapping(path = "cb")
 public class CurrencyExchangeCircuitBreakerController {
 
-    static int rertyCount = 1;
-
+    private final Logger logger = LoggerFactory.getLogger(CurrencyExchangeCircuitBreakerController.class);
+    private static int retryCount = 1;
     @Autowired
     private Environment environment;
-    private Logger logger = LoggerFactory.getLogger(CurrencyExchangeCircuitBreakerController.class);
-    private CurrencyExchangeService currencyExchangeService;
+    CurrencyExchangeService currencyExchangeService;
 
     CurrencyExchangeCircuitBreakerController(CurrencyExchangeService currencyExchangeService) {
         this.currencyExchangeService = currencyExchangeService;
@@ -31,20 +30,31 @@ public class CurrencyExchangeCircuitBreakerController {
 
     @GetMapping("currency-exchange")
     @Retry(name = "currency-exchange-get-all")
-    public List<CurrencyExchange> retriveAllExchangeValue() {
+    public List<CurrencyExchange> retrieveAllExchangeValues() {
+
+        logger.info("CurrencyExchangeCircuitBreakerController:::retrieveAllExchangeValues:::Begin");
+
         String port = environment.getProperty("local.server.port");
-        logger.info("CurrencyExchangeCircuitBreakerController:::retriveAllExchangeValue:::rertyCount : " + rertyCount);
+        logger.info("CurrencyExchangeCircuitBreakerController:::retrieveAllExchangeValues:::retryCount : " + retryCount);
+
+        logger.info("CurrencyExchangeCircuitBreakerController:::retrieveAllExchangeValues:::End");
         return currencyExchangeService.getAllCurrencyExchanges();
     }
 
     @GetMapping("currency-exchange/from/{fromCurrency}/to/{toCurrency}")
-    public CurrencyExchange retriveExchangeValue(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
+    public CurrencyExchange retrieveExchangeValue(@PathVariable String fromCurrency, @PathVariable String toCurrency) {
+
+        logger.info("CurrencyExchangeCircuitBreakerController:::retrieveExchangeValue:::Begin");
+
         String port = environment.getProperty("local.server.port");
+
 //        return currencyExchangeService.getAllCurrencyExchanges().stream().filter(ex -> {
 //            return ex.getFromCurrency().equals(fromCurrency) && ex.getToCurrency().equals(toCurrency);
 //        }).collect(Collectors.toList());
+
         CurrencyExchange currencyExchange = currencyExchangeService.getByFromCurrencyAndToCurrency(fromCurrency, toCurrency);
-        currencyExchange.setEnvironment("PORT : " + port);
+
+        logger.info("CurrencyExchangeCircuitBreakerController:::retrieveExchangeValue:::End");
         return currencyExchange;
     }
 }

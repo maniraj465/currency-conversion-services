@@ -25,6 +25,6 @@ public class CurrencyExchange {
 
     @Column(name = "currency_to")
     private String toCurrency;
+
     private BigDecimal conversionMultiple;
-    private String environment;
 }
