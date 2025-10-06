@@ -1,25 +1,33 @@
 #version: '3.7'    - the attribute `version` is obsolete, it will be ignored
 
+networks:
+  currency-service-network:
+
+volumes:
+  mysql_data:
+
 services:
-# ----------------------------------------------------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------------------------------------------------
   currency-service-mysql-db:
-    image: mysql:8-oracle
-    environment:
-      - MYSQL_ROOT_PASSWORD=Alliswell@1
-      - MYSQL_DATABASE=currency_exchange_service
-      - MYSQL_USER=maniraj
-      - MYSQL_PASSWORD=Alliswell@1
+    image: mysql:8.4
     networks:
       - currency-service-network
     ports:
       - "3336:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "Alliswell@1"
+      MYSQL_DATABASE: "currency_exchange_service"
+      MYSQL_USER: "maniraj"
+      MYSQL_PASSWORD: "Alliswell@1"
+
     volumes:
       - mysql_data:/var/lib/mysql
-
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      test: [ "CMD", "mysqladmin", "ping", "--protocol=tcp", "-h", "127.0.0.1", "-u", "maniraj", "-pAlliswell@1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 # ----------------------------------------------------------------------------------------------------------------------
   naming-server:
@@ -29,16 +37,14 @@ services:
     ports:
       - "8765:8765"
     environment:
-      SPRING_APPLICATION_NAME: "naming-server"
-      SERVER_PORT: "8765"
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
-      EUREKA_CLIENT_FETCH_REGISTRY: "false"
-      EUREKA_INSTANCE_HOSTNAME: "localhost"
+      EUREKA_FETCH_REGISTRY: "false"
+      EUREKA_FETCH_INSTANCE_HOSTNAME: "localhost"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
   zipkin:
-    image: openzipkin/zipkin
+    image: openzipkin/zipkin:latest
     networks:
       - currency-service-network
     ports:
@@ -47,47 +53,65 @@ services:
 # ----------------------------------------------------------------------------------------------------------------------
   currency-exchange-service:
     image: dockeraaanm/currency-exchange-service:0.0.1-SNAPSHOT
+    mem_limit: 700m  # Version 2.x: Use mem_limit directly under service
     networks:
       - currency-service-network
     ports:
       - "8000:8000"
-#    mem_limit: 700m  # Version 2.x: Use mem_limit directly under service
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 700m  # Version 3.x: Use deploy.resources.limits.memory
     environment:
-      SERVER_PORT: "8000"
-      SPRING_APPLICATION_NAME: "currency-exchange-service"
-#      SPRING_CONFIG_IMPORT: "optional:configserver:http://localhost:8888"
-      SPRING_CLOUD_CONFIG_PROFILE: "dev"
-      SPRING_SQL_INIT_MODE: "always"
-      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3336/currency_exchange_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
-#      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3336/currency_exchange_service"
-#      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3336/currency_exchange_service?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3306/currency_exchange_service"
       SPRING_DATASOURCE_USERNAME: "maniraj"
       SPRING_DATASOURCE_PASSWORD: "Alliswell@1"
-#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.cj.jdbc.Driver"
-#      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.jdbc.Driver"
-      SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: "create-drop"
-      SPRING_JPA_PROPERTIES_ALLOW_PUBLIC_KEY_RETRIEVAL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQLDialect"
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_EXCHANGE_GET_ALL_MAXRETRYATTEMPTS: "5"
-      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
-      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://naming-server:8765/eureka"
-#      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://localhost:8765/eureka"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
-      EUREKA_INSTANCE_HOSTNAME: "localhost"
-      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
+      EUREKA_INSTANCE_IP_ADDRESS: "naming-server"
+      EUREKA_INSTANCE_HOSTNAME: "naming-server"
     depends_on:
       currency-service-mysql-db:
         condition: service_healthy
 
+#  currency-exchange-service:
+#    image: dockeraaanm/currency-exchange-service:0.0.1-SNAPSHOT
+#    networks:
+#      - currency-service-network
+#    ports:
+#      - "8000:8000"
+##    mem_limit: 700m  # Version 2.x: Use mem_limit directly under service
+##    deploy:
+##      resources:
+##        limits:
+##          memory: 700m  # Version 3.x: Use deploy.resources.limits.memory
+#    environment:
+#      SERVER_PORT: "8000"
+#      SPRING_APPLICATION_NAME: "currency-exchange-service"
+##      SPRING_CONFIG_IMPORT: "optional:configserver:http://localhost:8888"
+#      SPRING_CLOUD_CONFIG_PROFILE: "dev"
+#      SPRING_SQL_INIT_MODE: "always"
+#      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3336/currency_exchange_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+##      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3336/currency_exchange_service"
+##      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3336/currency_exchange_service?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false"
+#      SPRING_DATASOURCE_USERNAME: "maniraj"
+#      SPRING_DATASOURCE_PASSWORD: "Alliswell@1"
+##      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.cj.jdbc.Driver"
+##      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.mysql.jdbc.Driver"
+#      SPRING_JPA_SHOW_SQL: "true"
+#      SPRING_JPA_DEFER_DATASOURCE_INITIALIZATION: "true"
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: "create-drop"
+#      SPRING_JPA_PROPERTIES_ALLOW_PUBLIC_KEY_RETRIEVAL: "true"
+#      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: "org.hibernate.dialect.MySQLDialect"
+#      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+#      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_EXCHANGE_GET_ALL_MAXRETRYATTEMPTS: "5"
+#      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+#      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+#      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://naming-server:8765/eureka"
+#      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+#      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
+#      EUREKA_INSTANCE_HOSTNAME: "localhost"
+#      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
+#    depends_on:
+#      currency-service-mysql-db:
+#        condition: service_healthy
+#
 # ----------------------------------------------------------------------------------------------------------------------
   currency-conversion-service:
     image: dockeraaanm/currency-conversion-service:0.0.1-SNAPSHOT
@@ -96,26 +120,24 @@ services:
     ports:
       - "8100:8100"
     environment:
-      SERVER_PORT: "8100"
-      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_MAXATTEMPTS: "5"
-      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_WAITDURATION: "5s"
-      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_ENABLEEXPONENTIALBACKOFF: "true"
-      RESILIENCE4J_CIRCUITBREAKER_INSTANCES_DEFAULT_FAILURERATETHRESHOLD: "90"
-      RESILIENCE4J_RATELIMIT_INSTANCES_DEFAULT_LIMITFORPERIOD: "2"
-      RESILIENCE4J_RATELIMIT_INSTANCES_DEFAULT_LIMITREFRESHPERIOD: "10s"
-      RESILIENCE4J_BULKHEAD_INSTANCES_DEFAULT_MAXCONCURRENTCALLS: "10"
-      SPRING_APPLICATION_NAME: "currency-conversion-service"
-      SPRING_CONFIG_IMPORT: "optional:configserver:http://localhost:8888"
-      SPRING_CLOUD_CONFIG_PROFILE: "dev"
+#      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_MAXATTEMPTS: "5"
+#      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_WAITDURATION: "5s"
+#      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_ENABLEEXPONENTIALBACKOFF: "true"
+#      RESILIENCE4J_CIRCUITBREAKER_INSTANCES_DEFAULT_FAILURERATETHRESHOLD: "90"
+#      RESILIENCE4J_RATELIMIT_INSTANCES_DEFAULT_LIMITFORPERIOD: "2"
+#      RESILIENCE4J_RATELIMIT_INSTANCES_DEFAULT_LIMITREFRESHPERIOD: "10s"
+#      RESILIENCE4J_BULKHEAD_INSTANCES_DEFAULT_MAXCONCURRENTCALLS: "10"
+#      SPRING_CONFIG_IMPORT: "optional:configserver:http://localhost:8888"
+#      SPRING_CLOUD_CONFIG_PROFILE: "dev"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://naming-server:8761/eureka"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
       EUREKA_INSTANCE_IP_ADDRESS: "localhost"
       EUREKA_INSTANCE_HOSTNAME: "localhost"
-      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
-      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
-      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
-#    depends_on:
-#      - currency-exchange-service
+#      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
+#      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+#      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
   api-gateway:
@@ -125,30 +147,21 @@ services:
     ports:
       - "8761:8761"
     environment:
-      SPRING_APPLICATION_NAME: api-gateway
-      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
-      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
+#      SPRING_APPLICATION_NAME: api-gateway
+#      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
+#      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://naming-server:8765/eureka
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      EUREKA_INSTANCE_IP_ADDRESS: localhost
-      EUREKA_INSTANCE_HOSTNAME: localhost
-      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
-      EUREKA_CONFIG_IMPORT: optional:configserver:http://localhost:8888
-      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
-      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
-#    depends_on:
-#      - currency-conversion-service
+      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
+      EUREKA_INSTANCE_HOSTNAME: "localhost"
+#      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
+#      EUREKA_CONFIG_IMPORT: optional:configserver:http://localhost:8888
+#      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+#      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+
 
 
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-networks:
-  currency-service-network:
-    driver: bridge
-
-volumes:
-  mysql_data:
-
-
 # ----------------------------------------------------------------------------------------------------------------------
