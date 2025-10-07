@@ -10,6 +10,7 @@ services:
   # ----------------------------------------------------------------------------------------------------------------------
   currency-service-mysql-db:
     image: mysql:8.4
+    mem_limit: 700m
     networks:
       - currency-service-network
     ports:
@@ -19,7 +20,6 @@ services:
       MYSQL_DATABASE: "currency_exchange_service"
       MYSQL_USER: "maniraj"
       MYSQL_PASSWORD: "Alliswell@1"
-
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -32,23 +32,34 @@ services:
 # ----------------------------------------------------------------------------------------------------------------------
   naming-server:
     image: dockeraaanm/naming-server:0.0.1-SNAPSHOT
+    mem_limit: 700m
     networks:
       - currency-service-network
     ports:
-      - "8765:8765"
-    environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
-      EUREKA_FETCH_REGISTRY: "false"
-      EUREKA_FETCH_INSTANCE_HOSTNAME: "localhost"
-
+      - "8761:8761"
 
 # ----------------------------------------------------------------------------------------------------------------------
   zipkin:
     image: openzipkin/zipkin:latest
+    mem_limit: 700m
     networks:
       - currency-service-network
     ports:
       - "9411:9411"
+
+  # ----------------------------------------------------------------------------------------------------------------------
+  config-server:
+    image: dockeraaanm/spring-cloud-config-server:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    networks:
+      - currency-service-network
+    ports:
+      - "8888:8888"
+    environment:
+      eureka.client.serviceUrl.defaultZone: http://naming-server:8761/eureka/
+
+    depends_on:
+      - naming-server
 
 # ----------------------------------------------------------------------------------------------------------------------
   currency-exchange-service:
@@ -59,16 +70,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://currency-service-mysql-db:3306/currency_exchange_service"
-      SPRING_DATASOURCE_USERNAME: "maniraj"
-      SPRING_DATASOURCE_PASSWORD: "Alliswell@1"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://naming-server:8765/eureka"
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      EUREKA_INSTANCE_IP_ADDRESS: "naming-server"
-      EUREKA_INSTANCE_HOSTNAME: "naming-server"
+      spring.datasource.url: jdbc:mysql://currency-service-mysql-db:3306/currency_exchange_service
+      spring.datasource.username: maniraj
+      spring.datasource.password: Alliswell@1
+      spring.datasource.driver-class-name: com.mysql.cj.jdbc.Driver
+
+      eureka.client.serviceUrl.defaultZone: http://naming-server:8761/eureka/
+
     depends_on:
-      currency-service-mysql-db:
-        condition: service_healthy
+      - config-server
 
 #  currency-exchange-service:
 #    image: dockeraaanm/currency-exchange-service:0.0.1-SNAPSHOT
@@ -103,7 +113,7 @@ services:
 #      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_EXCHANGE_GET_ALL_MAXRETRYATTEMPTS: "5"
 #      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
 #      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
-#      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://naming-server:8765/eureka"
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8765/eureka"
 #      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
 #      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
 #      EUREKA_INSTANCE_HOSTNAME: "localhost"
@@ -115,11 +125,17 @@ services:
 # ----------------------------------------------------------------------------------------------------------------------
   currency-conversion-service:
     image: dockeraaanm/currency-conversion-service:0.0.1-SNAPSHOT
+    mem_limit: 700m
     networks:
       - currency-service-network
     ports:
       - "8100:8100"
     environment:
+      eureka.client.serviceUrl.defaultZone: http://naming-server:8761/eureka/
+
+    depends_on:
+      - currency-exchange-service
+
 #      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_MAXATTEMPTS: "5"
 #      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_WAITDURATION: "5s"
 #      RESILIENCE4J_RETRY_INSTANCES_CURRENCY_CONVERSION_API_ENABLEEXPONENTIALBACKOFF: "true"
@@ -129,10 +145,10 @@ services:
 #      RESILIENCE4J_BULKHEAD_INSTANCES_DEFAULT_MAXCONCURRENTCALLS: "10"
 #      SPRING_CONFIG_IMPORT: "optional:configserver:http://localhost:8888"
 #      SPRING_CLOUD_CONFIG_PROFILE: "dev"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://naming-server:8761/eureka"
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
-      EUREKA_INSTANCE_HOSTNAME: "localhost"
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://naming-server:8761/eureka"
+#      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+#      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
+#      EUREKA_INSTANCE_HOSTNAME: "localhost"
 #      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
 #      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
 #      LOGGING_PATTERN_LEVEL: "%5p [$${spring.application.name},%X{traceId:-},%X{spanId:-}]"
@@ -142,18 +158,24 @@ services:
 # ----------------------------------------------------------------------------------------------------------------------
   api-gateway:
     image: dockeraaanm/api-gateway:0.0.1-SNAPSHOT
+    mem_limit: 700m
     networks:
       - currency-service-network
     ports:
-      - "8761:8761"
+      - "8765:8765"
     environment:
+      eureka.client.serviceUrl.defaultZone: http://naming-server:8761/eureka/
+
+    depends_on:
+      - currency-conversion-service
+
 #      SPRING_APPLICATION_NAME: api-gateway
 #      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED: "true"
 #      SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_LOWER_CASE_SERVICE_ID: "true"
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://naming-server:8765/eureka
-      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
-      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
-      EUREKA_INSTANCE_HOSTNAME: "localhost"
+#      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://naming-server:8765/eureka
+#      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+#      EUREKA_INSTANCE_IP_ADDRESS: "localhost"
+#      EUREKA_INSTANCE_HOSTNAME: "localhost"
 #      EUREKA_INSTANCE_INSTANCE_ID: "$${spring.application.name}:$${server.port}"
 #      EUREKA_CONFIG_IMPORT: optional:configserver:http://localhost:8888
 #      MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"

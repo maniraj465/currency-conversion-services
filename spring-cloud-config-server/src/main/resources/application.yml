@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: config-server
+
+  cloud:
+    config:
+      server:
+        git:
+#          uri: file:///D:/GitHub/git-localconfig-repo-currency-conversion-services
+          uri: https://github.com/maniraj465/git-localconfig-repo-currency-conversion-services
+          username: maniraj465
+          password: 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
+
+server:
+  port: 8888
+
+eureka:
+  client:
+    service-url:
+      default-zone: http://naming-server:8761/eureka
+
+  instance:
+    prefer-ip-address: true
+    ip-address: localhost  # or use actual IP
+    hostname: localhost
+    instance-id: ${spring.application.name}:${server.port}

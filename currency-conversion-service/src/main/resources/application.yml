@@ -1,7 +1,6 @@
 server:
   port: 8100
 
-
 resilience4j.retry:
   instances:
     currency-conversion-api:
@@ -32,13 +31,12 @@ resilience4j.bulkhead:
     default:
       maxConcurrentCalls: 10
 
-
 spring:
   application:
     name: currency-conversion-service
 
   config:
-    import: optional:configserver:http://localhost:8888
+    import: optional:configserver:http://config-server:8888
 
   cloud:
     config:
@@ -47,8 +45,8 @@ spring:
 eureka:
   client:
     service-url:
-      default-zone: http://localhost:8765/eureka
-      # default-zone: naming-server:8765/eureka
+#      default-zone: http://localhost:8761/eureka
+       default-zone: naming-server:8761/eureka
 
   instance:
     prefer-ip-address: true

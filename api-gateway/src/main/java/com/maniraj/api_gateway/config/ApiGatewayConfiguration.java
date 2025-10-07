@@ -31,15 +31,15 @@ public class ApiGatewayConfiguration {
 
         Function<PredicateSpec, Buildable<Route>> currencyExchangeRouteFunction =
                 p -> p.path("/currency-exchange/**")
-                        .uri("lb://currency-exchange");
+                        .uri("lb://currency-exchange-service");
 
         Function<PredicateSpec, Buildable<Route>> currencyConversionRouteFunction =
                 p -> p.path("/currency-conversion/**")
-                        .uri("lb://currency-conversion");
+                        .uri("lb://currency-conversion-service");
 
         Function<PredicateSpec, Buildable<Route>> currencyConversionFeignRouteFunction =
                 p -> p.path("/currency-conversion-feign/**")
-                        .uri("lb://currency-conversion");
+                        .uri("lb://currency-conversion-service");
 
         Function<PredicateSpec, Buildable<Route>> currencyConversionNewRouteFunction =
                 p -> p.path("/currency-conversion-new/**")
@@ -47,7 +47,7 @@ public class ApiGatewayConfiguration {
                                 .rewritePath(
                                         "/currency-conversion-new/(?<segment>.*)",
                                         "/currency-conversion-feign/${segment}"))
-                        .uri("lb://currency-conversion");
+                        .uri("lb://currency-conversion-service");
 
         logger.info("ApiGatewayConfiguration:::gatewayRouter:::End");
 

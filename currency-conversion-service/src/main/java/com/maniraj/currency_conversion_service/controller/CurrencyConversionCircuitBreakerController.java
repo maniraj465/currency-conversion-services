@@ -49,7 +49,7 @@ public class CurrencyConversionCircuitBreakerController {
         uriVariables.put("toCurrency", toCurrency);
 
         ResponseEntity<CurrencyConversion> responseEntity = restTemplate
-                .getForEntity("http://localhost:8000/currency-exchange/from/{fromCurrency}/to/{toCurrency}",
+                .getForEntity("http://currency-exchange-service:8000/currency-exchange/from/{fromCurrency}/to/{toCurrency}",
                         CurrencyConversion.class, uriVariables);
 
         CurrencyConversion currencyConversion = responseEntity.getBody();
