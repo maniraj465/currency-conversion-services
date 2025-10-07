@@ -22,6 +22,36 @@ public class ApiGatewayConfiguration {
 
         logger.info("ApiGatewayConfiguration:::gatewayRouter:::Begin");
 
+//        return builder.routes()
+//                .route("currency-exchange-route", p -> p.path("/currency-exchange/**")
+//                        .filters(f -> f
+//                                .filter((exchange, chain) -> {
+//                                    logger.info("Routing to currency-exchange-service: {}", exchange.getRequest().getPath());
+//                                    return chain.filter(exchange);
+//                                })
+////                                .rewritePath("/currency-exchange/(?<segment>.*)", "/${segment}")
+//                        )
+//                        .uri("lb://currency-exchange-service"))
+////                      .uri("http://localhost:8000"))
+//                .route("currency-conversion-route", p -> p.path("/currency-conversion/**")
+//                        .filters(f -> f
+//                                .filter((exchange, chain) -> {
+//                                    logger.info("Routing to currency-conversion-service: {}", exchange.getRequest().getPath());
+//                                    return chain.filter(exchange);
+//                                })
+//                                .rewritePath("/currency-conversion/(?<segment>.*)", "/${segment}")
+//                        )
+//                        .uri("lb://currency-conversion-service"))
+//                .route("get-route", p -> p.path("/get")
+//                        .filters(f -> f
+//                                .addRequestHeader("X-h-name", "X-h-value")
+//                                .addRequestParameter("R-params", "R-values"))
+//                        .uri("http://httpbin.org:80"))
+//                .build();
+
+
+
+
         Function<PredicateSpec, Buildable<Route>> getRouteFunction =
                 p -> p.path("/get")
                         .filters(f -> f
@@ -48,6 +78,9 @@ public class ApiGatewayConfiguration {
                                         "/currency-conversion-new/(?<segment>.*)",
                                         "/currency-conversion-feign/${segment}"))
                         .uri("lb://currency-conversion-service");
+
+        logger.info("ApiGatewayConfiguration:::gatewayRouter:::End");
+
 
         logger.info("ApiGatewayConfiguration:::gatewayRouter:::End");
 
